@@ -108,14 +108,16 @@ export default function Home() {
   return (
     <div className="relative min-h-screen overflow-hidden px-4 py-8 text-slate-100 sm:px-8">
       <div className="fixed left-4 top-4 z-20 sm:left-6 sm:top-6">
+        <div className="flex h-16 w-16 items-center justify-center rounded-2xl border border-amber-500/20 bg-slate-950/90 p-2 shadow-lg shadow-black/40 sm:h-[4.5rem] sm:w-[4.5rem]">
         <Image
           src="/card-affinity-logo.jpeg"
           alt="Card Affinity logo"
-          width={96}
-          height={96}
-          className="h-14 w-14 rounded-lg object-contain sm:h-16 sm:w-16"
+          width={56}
+          height={56}
+          className="h-12 w-12 object-contain sm:h-14 sm:w-14"
           priority
         />
+        </div>
       </div>
       <div
         className="fixed inset-0 -z-10 bg-cover bg-center bg-no-repeat"
