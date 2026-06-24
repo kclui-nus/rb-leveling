@@ -1,6 +1,5 @@
 "use client";
 
-import Image from "next/image";
 import { useMemo, useState } from "react";
 
 type Member = {
@@ -107,18 +106,6 @@ export default function Home() {
 
   return (
     <div className="relative min-h-screen overflow-hidden px-4 py-8 text-slate-100 sm:px-8">
-      <div className="fixed left-4 top-4 z-20 sm:left-6 sm:top-6">
-        <div className="flex h-16 w-16 items-center justify-center rounded-2xl border border-amber-500/20 bg-slate-950/90 p-2 shadow-lg shadow-black/40 sm:h-[4.5rem] sm:w-[4.5rem]">
-        <Image
-          src="/card-affinity-logo.jpeg"
-          alt="Card Affinity logo"
-          width={56}
-          height={56}
-          className="h-12 w-12 object-contain sm:h-14 sm:w-14"
-          priority
-        />
-        </div>
-      </div>
       <div
         className="fixed inset-0 -z-10 bg-cover bg-center bg-no-repeat"
         style={{ backgroundImage: "url('/rb-background.jpeg')" }}
@@ -126,16 +113,28 @@ export default function Home() {
       <div className="fixed inset-0 -z-10 bg-slate-950/55" />
       <main className="mx-auto w-full max-w-4xl space-y-6">
         <section className="overflow-hidden rounded-3xl border border-white/15 bg-slate-950/55 p-6 shadow-lg shadow-black/40 backdrop-blur-md sm:p-8">
-          <p className="text-sm font-semibold uppercase tracking-[0.18em] text-amber-700">
-            Current Level
-          </p>
-          <div className="mt-2 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
-            <h1 className="text-4xl font-bold tracking-tight sm:text-5xl">
-              Level {level}
-            </h1>
-            <p className="text-sm font-medium text-slate-300 sm:text-base">
-              {xpIntoCurrentLevel} / {XP_PER_LEVEL} XP
-            </p>
+          <div className="flex items-start gap-4 sm:gap-5">
+            <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-2xl border border-amber-500/20 bg-slate-950/90 p-2 shadow-lg shadow-black/40 sm:h-[4.5rem] sm:w-[4.5rem]">
+              <img
+                src="/card-affinity-logo.jpeg"
+                alt="Card Affinity logo"
+                className="h-12 w-12 object-contain sm:h-14 sm:w-14"
+              />
+            </div>
+
+            <div className="min-w-0 flex-1">
+              <p className="text-sm font-semibold uppercase tracking-[0.18em] text-amber-700">
+                Current Level
+              </p>
+              <div className="mt-2 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+                <h1 className="text-4xl font-bold tracking-tight sm:text-5xl">
+                  Level {level}
+                </h1>
+                <p className="text-sm font-medium text-slate-300 sm:text-base">
+                  {xpIntoCurrentLevel} / {XP_PER_LEVEL} XP
+                </p>
+              </div>
+            </div>
           </div>
 
           <div className="mt-5 h-4 w-full overflow-hidden rounded-full bg-white/15">
