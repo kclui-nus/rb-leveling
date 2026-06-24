@@ -176,9 +176,6 @@ export default function Home() {
             />
           </div>
 
-          <p className={`mt-3 text-sm ${isDark ? "text-slate-300" : "text-slate-600"}`}>
-            {featuredMember.name} is leading right now with {featuredMember.currentXp} current XP.
-          </p>
         </section>
 
         <section
