@@ -6,7 +6,6 @@ type Member = {
   id: number;
   name: string;
   xp: number;
-  bio: string;
 };
 
 const XP_PER_LEVEL = 64;
@@ -16,51 +15,50 @@ const members: Member[] = [
     id: 1,
     name: "Kai",
     xp: 198,
-    bio: "Focuses on backend automation and query performance.",
   },
   {
     id: 2,
     name: "Mina",
     xp: 252,
-    bio: "Runs challenge events and helps new members ramp up quickly.",
   },
   {
     id: 3,
     name: "Jordan",
     xp: 145,
-    bio: "Builds UI polish updates and accessibility improvements.",
   },
   {
     id: 4,
     name: "Riley",
     xp: 231,
-    bio: "Handles deployment checks and release readiness.",
   },
   {
     id: 5,
     name: "Nora",
     xp: 119,
-    bio: "Owns docs quality and onboarding playbooks.",
   },
   {
     id: 6,
     name: "Elio",
     xp: 173,
-    bio: "Maintains integrations and observability tooling.",
   },
   {
     id: 7,
     name: "Sage",
     xp: 264,
-    bio: "Leads weekly experiments and performance testing.",
   },
   {
     id: 8,
     name: "Iris",
     xp: 96,
-    bio: "Supports QA flows and issue triage.",
   },
 ];
+
+function getMemberProgress(lifetimeXp: number) {
+  const level = Math.floor(lifetimeXp / XP_PER_LEVEL) + 1;
+  const currentXp = lifetimeXp % XP_PER_LEVEL;
+
+  return { level, currentXp };
+}
 
 export default function Home() {
   const [query, setQuery] = useState("");
@@ -167,22 +165,57 @@ export default function Home() {
                 No members found for this search.
               </p>
             ) : (
-              filteredMembers.map((member) => (
-                <details
-                  key={member.id}
-                  className="group rounded-xl border border-slate-200 bg-slate-50"
-                >
-                  <summary className="flex cursor-pointer list-none items-center justify-between px-4 py-3 text-left font-semibold">
-                    <span>{member.name}</span>
-                    <span className="text-sm font-medium text-slate-600">
-                      {member.xp} XP
-                    </span>
-                  </summary>
-                  <div className="border-t border-slate-200 px-4 py-3 text-sm text-slate-700">
-                    {member.bio}
-                  </div>
-                </details>
-              ))
+              filteredMembers.map((member) => {
+                const { level, currentXp } = getMemberProgress(member.xp);
+
+                return (
+                  <details
+                    key={member.id}
+                    className="group rounded-xl border border-slate-200 bg-slate-50"
+                  >
+                    <summary className="flex cursor-pointer list-none items-center justify-between px-4 py-3 text-left font-semibold">
+                      <span>{member.name}</span>
+                      <span className="text-sm font-medium text-slate-600">
+                        Level {level}
+                      </span>
+                    </summary>
+                    <div className="border-t border-slate-200 px-4 py-3 text-sm text-slate-700">
+                      <dl className="grid gap-2 sm:grid-cols-2">
+                        <div className="rounded-lg bg-white px-3 py-2">
+                          <dt className="text-xs uppercase tracking-wide text-slate-500">
+                            Member Name
+                          </dt>
+                          <dd className="mt-1 font-semibold text-slate-900">
+                            {member.name}
+                          </dd>
+                        </div>
+                        <div className="rounded-lg bg-white px-3 py-2">
+                          <dt className="text-xs uppercase tracking-wide text-slate-500">
+                            Level
+                          </dt>
+                          <dd className="mt-1 font-semibold text-slate-900">{level}</dd>
+                        </div>
+                        <div className="rounded-lg bg-white px-3 py-2">
+                          <dt className="text-xs uppercase tracking-wide text-slate-500">
+                            Current XP
+                          </dt>
+                          <dd className="mt-1 font-semibold text-slate-900">
+                            {currentXp} / {XP_PER_LEVEL}
+                          </dd>
+                        </div>
+                        <div className="rounded-lg bg-white px-3 py-2">
+                          <dt className="text-xs uppercase tracking-wide text-slate-500">
+                            Lifetime XP
+                          </dt>
+                          <dd className="mt-1 font-semibold text-slate-900">
+                            {member.xp}
+                          </dd>
+                        </div>
+                      </dl>
+                    </div>
+                  </details>
+                );
+              })
             )}
           </div>
         </section>
