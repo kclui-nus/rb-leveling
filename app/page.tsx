@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { useMemo, useState } from "react";
 
 type Member = {
@@ -106,6 +107,16 @@ export default function Home() {
 
   return (
     <div className="relative min-h-screen overflow-hidden px-4 py-8 text-slate-100 sm:px-8">
+      <div className="fixed left-4 top-4 z-20 sm:left-6 sm:top-6">
+        <Image
+          src="/card-affinity-logo.jpeg"
+          alt="Card Affinity logo"
+          width={96}
+          height={96}
+          className="h-14 w-14 rounded-lg object-contain sm:h-16 sm:w-16"
+          priority
+        />
+      </div>
       <div
         className="fixed inset-0 -z-10 bg-cover bg-center bg-no-repeat"
         style={{ backgroundImage: "url('/rb-background.jpeg')" }}
