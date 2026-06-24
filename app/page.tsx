@@ -118,24 +118,36 @@ export default function Home() {
           <h2 className="text-2xl font-bold tracking-tight">Leaderboard</h2>
           <p className="mt-1 text-sm text-slate-600">Top 5 members by XP</p>
 
-          <ol className="mt-4 space-y-3">
-            {topFive.map((member, index) => (
-              <li
-                key={member.id}
-                className="flex items-center justify-between rounded-xl border border-slate-200 bg-slate-50 px-4 py-3"
-              >
-                <div className="flex items-center gap-3">
-                  <span className="inline-flex h-8 w-8 items-center justify-center rounded-full bg-slate-900 text-sm font-semibold text-white">
-                    {index + 1}
-                  </span>
-                  <span className="text-base font-semibold">{member.name}</span>
-                </div>
-                <span className="text-sm font-semibold text-slate-700">
-                  {member.xp} XP
-                </span>
-              </li>
-            ))}
-          </ol>
+          <div className="mt-4 overflow-x-auto rounded-xl border border-slate-200 bg-slate-50">
+            <table className="min-w-full text-left text-sm">
+              <thead className="bg-slate-100 text-xs uppercase tracking-wide text-slate-600">
+                <tr>
+                  <th className="px-4 py-3">Rank</th>
+                  <th className="px-4 py-3">Member Name</th>
+                  <th className="px-4 py-3">Level</th>
+                  <th className="px-4 py-3">Current XP</th>
+                  <th className="px-4 py-3">Lifetime XP</th>
+                </tr>
+              </thead>
+              <tbody>
+                {topFive.map((member, index) => {
+                  const { level, currentXp } = getMemberProgress(member.xp);
+
+                  return (
+                    <tr key={member.id} className="border-t border-slate-200">
+                      <td className="px-4 py-3 font-semibold text-slate-900">#{index + 1}</td>
+                      <td className="px-4 py-3 font-semibold text-slate-900">{member.name}</td>
+                      <td className="px-4 py-3 text-slate-700">{level}</td>
+                      <td className="px-4 py-3 text-slate-700">
+                        {currentXp} / {XP_PER_LEVEL}
+                      </td>
+                      <td className="px-4 py-3 text-slate-700">{member.xp}</td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
         </section>
 
         <section className="rounded-3xl border border-teal-200/80 bg-white/85 p-6 shadow-lg shadow-teal-100 backdrop-blur-sm sm:p-8">
@@ -143,7 +155,7 @@ export default function Home() {
             <div>
               <h2 className="text-2xl font-bold tracking-tight">Members</h2>
               <p className="mt-1 text-sm text-slate-600">
-                Search members and open their details
+                Search members and view stats in a table
               </p>
             </div>
 
@@ -159,63 +171,38 @@ export default function Home() {
             </label>
           </div>
 
-          <div className="mt-5 space-y-3">
+          <div className="mt-5 overflow-x-auto rounded-xl border border-slate-200 bg-slate-50">
             {filteredMembers.length === 0 ? (
               <p className="rounded-xl border border-dashed border-slate-300 bg-slate-50 p-4 text-sm text-slate-600">
                 No members found for this search.
               </p>
             ) : (
-              filteredMembers.map((member) => {
-                const { level, currentXp } = getMemberProgress(member.xp);
+              <table className="min-w-full text-left text-sm">
+                <thead className="bg-slate-100 text-xs uppercase tracking-wide text-slate-600">
+                  <tr>
+                    <th className="px-4 py-3">Member Name</th>
+                    <th className="px-4 py-3">Level</th>
+                    <th className="px-4 py-3">Current XP</th>
+                    <th className="px-4 py-3">Lifetime XP</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {filteredMembers.map((member) => {
+                    const { level, currentXp } = getMemberProgress(member.xp);
 
-                return (
-                  <details
-                    key={member.id}
-                    className="group rounded-xl border border-slate-200 bg-slate-50"
-                  >
-                    <summary className="flex cursor-pointer list-none items-center justify-between px-4 py-3 text-left font-semibold">
-                      <span>{member.name}</span>
-                      <span className="text-sm font-medium text-slate-600">
-                        Level {level}
-                      </span>
-                    </summary>
-                    <div className="border-t border-slate-200 px-4 py-3 text-sm text-slate-700">
-                      <dl className="grid gap-2 sm:grid-cols-2">
-                        <div className="rounded-lg bg-white px-3 py-2">
-                          <dt className="text-xs uppercase tracking-wide text-slate-500">
-                            Member Name
-                          </dt>
-                          <dd className="mt-1 font-semibold text-slate-900">
-                            {member.name}
-                          </dd>
-                        </div>
-                        <div className="rounded-lg bg-white px-3 py-2">
-                          <dt className="text-xs uppercase tracking-wide text-slate-500">
-                            Level
-                          </dt>
-                          <dd className="mt-1 font-semibold text-slate-900">{level}</dd>
-                        </div>
-                        <div className="rounded-lg bg-white px-3 py-2">
-                          <dt className="text-xs uppercase tracking-wide text-slate-500">
-                            Current XP
-                          </dt>
-                          <dd className="mt-1 font-semibold text-slate-900">
-                            {currentXp} / {XP_PER_LEVEL}
-                          </dd>
-                        </div>
-                        <div className="rounded-lg bg-white px-3 py-2">
-                          <dt className="text-xs uppercase tracking-wide text-slate-500">
-                            Lifetime XP
-                          </dt>
-                          <dd className="mt-1 font-semibold text-slate-900">
-                            {member.xp}
-                          </dd>
-                        </div>
-                      </dl>
-                    </div>
-                  </details>
-                );
-              })
+                    return (
+                      <tr key={member.id} className="border-t border-slate-200">
+                        <td className="px-4 py-3 font-semibold text-slate-900">{member.name}</td>
+                        <td className="px-4 py-3 text-slate-700">{level}</td>
+                        <td className="px-4 py-3 text-slate-700">
+                          {currentXp} / {XP_PER_LEVEL}
+                        </td>
+                        <td className="px-4 py-3 text-slate-700">{member.xp}</td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
             )}
           </div>
         </section>
