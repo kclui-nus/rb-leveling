@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 
 type Member = {
   id: number;
@@ -67,26 +67,6 @@ function getMemberProgress(lifetimeXp: number) {
 
 export default function Home() {
   const [query, setQuery] = useState("");
-  const [theme, setTheme] = useState<"light" | "dark">("light");
-
-  useEffect(() => {
-    const savedTheme = localStorage.getItem("theme");
-    if (savedTheme === "light" || savedTheme === "dark") {
-      setTheme(savedTheme);
-      return;
-    }
-
-    const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
-    setTheme(prefersDark ? "dark" : "light");
-  }, []);
-
-  function toggleTheme() {
-    setTheme((currentTheme) => {
-      const nextTheme = currentTheme === "light" ? "dark" : "light";
-      localStorage.setItem("theme", nextTheme);
-      return nextTheme;
-    });
-  }
 
   const membersWithProgress = useMemo<MemberWithProgress[]>(
     () =>
@@ -124,32 +104,14 @@ export default function Home() {
     );
   }, [query, membersWithProgress]);
 
-  const isDark = theme === "dark";
-
   return (
     <div className="relative min-h-screen overflow-hidden px-4 py-8 text-slate-100 sm:px-8">
-      <div className="fixed inset-0 -z-20 bg-slate-950" />
       <div
         className="fixed inset-0 -z-10 bg-cover bg-center bg-no-repeat"
-        style={{ backgroundImage: "url('/riftbound-bg.png')" }}
+        style={{ backgroundImage: "url('/rb-background.jpeg')" }}
       />
       <div className="fixed inset-0 -z-10 bg-slate-950/55" />
       <main className="mx-auto w-full max-w-4xl space-y-6">
-        <div className="flex justify-end">
-          <button
-            type="button"
-            onClick={toggleTheme}
-            className={`rounded-xl border px-4 py-2 text-sm font-semibold transition ${
-              isDark
-                ? "border-slate-600 bg-slate-800 text-slate-100 hover:bg-slate-700"
-                : "border-slate-300 bg-white/90 text-slate-800 hover:bg-white"
-            }`}
-            aria-label="Toggle dark and light mode"
-          >
-            {isDark ? "Light Mode" : "Dark Mode"}
-          </button>
-        </div>
-
         <section className="overflow-hidden rounded-3xl border border-white/15 bg-slate-950/55 p-6 shadow-lg shadow-black/40 backdrop-blur-md sm:p-8">
           <p className="text-sm font-semibold uppercase tracking-[0.18em] text-amber-700">
             Current Level
@@ -158,7 +120,7 @@ export default function Home() {
             <h1 className="text-4xl font-bold tracking-tight sm:text-5xl">
               Level {level}
             </h1>
-            <p className={`text-sm font-medium sm:text-base ${isDark ? "text-slate-300" : "text-slate-600"}`}>
+            <p className="text-sm font-medium text-slate-300 sm:text-base">
               {xpIntoCurrentLevel} / {XP_PER_LEVEL} XP
             </p>
           </div>
@@ -174,9 +136,7 @@ export default function Home() {
 
         <section className="rounded-3xl border border-white/15 bg-slate-950/55 p-6 shadow-lg shadow-black/40 backdrop-blur-md sm:p-8">
           <h2 className="text-2xl font-bold tracking-tight">Leaderboard</h2>
-          <p className={`mt-1 text-sm ${isDark ? "text-slate-300" : "text-slate-600"}`}>
-            Top 5 members by current XP
-          </p>
+          <p className="mt-1 text-sm text-slate-300">Top 5 members by current XP</p>
 
           <div
             className="mt-4 overflow-x-auto rounded-xl border border-white/10 bg-black/20"
@@ -215,9 +175,7 @@ export default function Home() {
           <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
             <div>
               <h2 className="text-2xl font-bold tracking-tight">Members</h2>
-              <p className="mt-1 text-sm text-slate-300">
-                Search members and view stats in a table
-              </p>
+              <p className="mt-1 text-sm text-slate-300">Search members and view stats in a table</p>
             </div>
 
             <label className="w-full sm:max-w-xs">
