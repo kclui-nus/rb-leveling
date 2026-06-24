@@ -1,11 +1,16 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 type Member = {
   id: number;
   name: string;
   xp: number;
+};
+
+type MemberWithProgress = Member & {
+  level: number;
+  currentXp: number;
 };
 
 const XP_PER_LEVEL = 64;
@@ -62,34 +67,96 @@ function getMemberProgress(lifetimeXp: number) {
 
 export default function Home() {
   const [query, setQuery] = useState("");
+  const [theme, setTheme] = useState<"light" | "dark">("light");
 
-  const sortedByXp = useMemo(
-    () => [...members].sort((a, b) => b.xp - a.xp),
+  useEffect(() => {
+    const savedTheme = localStorage.getItem("theme");
+    if (savedTheme === "light" || savedTheme === "dark") {
+      setTheme(savedTheme);
+      return;
+    }
+
+    const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
+    setTheme(prefersDark ? "dark" : "light");
+  }, []);
+
+  function toggleTheme() {
+    setTheme((currentTheme) => {
+      const nextTheme = currentTheme === "light" ? "dark" : "light";
+      localStorage.setItem("theme", nextTheme);
+      return nextTheme;
+    });
+  }
+
+  const membersWithProgress = useMemo<MemberWithProgress[]>(
+    () =>
+      members.map((member) => {
+        const { level, currentXp } = getMemberProgress(member.xp);
+
+        return { ...member, level, currentXp };
+      }),
     [],
   );
 
-  const topFive = useMemo(() => sortedByXp.slice(0, 5), [sortedByXp]);
+  const sortedByCurrentXp = useMemo(
+    () =>
+      [...membersWithProgress].sort(
+        (a, b) => b.currentXp - a.currentXp || b.xp - a.xp,
+      ),
+    [membersWithProgress],
+  );
+
+  const topFive = useMemo(() => sortedByCurrentXp.slice(0, 5), [sortedByCurrentXp]);
 
   const featuredMember = topFive[0];
-  const level = Math.floor(featuredMember.xp / XP_PER_LEVEL) + 1;
-  const xpIntoCurrentLevel = featuredMember.xp % XP_PER_LEVEL;
+  const level = featuredMember.level;
+  const xpIntoCurrentLevel = featuredMember.currentXp;
   const progressPercent = (xpIntoCurrentLevel / XP_PER_LEVEL) * 100;
 
   const filteredMembers = useMemo(() => {
     const q = query.trim().toLowerCase();
     if (!q) {
-      return sortedByXp;
+      return membersWithProgress;
     }
 
-    return sortedByXp.filter((member) =>
+    return membersWithProgress.filter((member) =>
       member.name.toLowerCase().includes(q),
     );
-  }, [query, sortedByXp]);
+  }, [query, membersWithProgress]);
+
+  const isDark = theme === "dark";
 
   return (
-    <div className="min-h-screen bg-[radial-gradient(circle_at_top_left,_#fef3c7,_#f8fafc_40%,_#e0f2fe_100%)] px-4 py-8 text-slate-900 sm:px-8">
+    <div
+      className={`min-h-screen px-4 py-8 sm:px-8 ${
+        isDark
+          ? "bg-[radial-gradient(circle_at_top_left,_#0f172a,_#111827_40%,_#0f172a_100%)] text-slate-100"
+          : "bg-[radial-gradient(circle_at_top_left,_#fef3c7,_#f8fafc_40%,_#e0f2fe_100%)] text-slate-900"
+      }`}
+    >
       <main className="mx-auto w-full max-w-4xl space-y-6">
-        <section className="overflow-hidden rounded-3xl border border-amber-200/70 bg-white/85 p-6 shadow-lg shadow-amber-100 backdrop-blur-sm sm:p-8">
+        <div className="flex justify-end">
+          <button
+            type="button"
+            onClick={toggleTheme}
+            className={`rounded-xl border px-4 py-2 text-sm font-semibold transition ${
+              isDark
+                ? "border-slate-600 bg-slate-800 text-slate-100 hover:bg-slate-700"
+                : "border-slate-300 bg-white/90 text-slate-800 hover:bg-white"
+            }`}
+            aria-label="Toggle dark and light mode"
+          >
+            {isDark ? "Light Mode" : "Dark Mode"}
+          </button>
+        </div>
+
+        <section
+          className={`overflow-hidden rounded-3xl border p-6 shadow-lg backdrop-blur-sm sm:p-8 ${
+            isDark
+              ? "border-amber-400/20 bg-slate-900/70 shadow-black/40"
+              : "border-amber-200/70 bg-white/85 shadow-amber-100"
+          }`}
+        >
           <p className="text-sm font-semibold uppercase tracking-[0.18em] text-amber-700">
             Current Level
           </p>
@@ -97,64 +164,85 @@ export default function Home() {
             <h1 className="text-4xl font-bold tracking-tight sm:text-5xl">
               Level {level}
             </h1>
-            <p className="text-sm font-medium text-slate-600 sm:text-base">
+            <p className={`text-sm font-medium sm:text-base ${isDark ? "text-slate-300" : "text-slate-600"}`}>
               {xpIntoCurrentLevel} / {XP_PER_LEVEL} XP
             </p>
           </div>
 
-          <div className="mt-5 h-4 w-full overflow-hidden rounded-full bg-amber-100">
+          <div className={`mt-5 h-4 w-full overflow-hidden rounded-full ${isDark ? "bg-slate-700" : "bg-amber-100"}`}>
             <div
               className="h-full rounded-full bg-gradient-to-r from-amber-500 to-teal-500 transition-all duration-700"
               style={{ width: `${progressPercent}%` }}
             />
           </div>
 
-          <p className="mt-3 text-sm text-slate-600">
-            {featuredMember.name} is leading right now with {featuredMember.xp} XP.
+          <p className={`mt-3 text-sm ${isDark ? "text-slate-300" : "text-slate-600"}`}>
+            {featuredMember.name} is leading right now with {featuredMember.currentXp} current XP.
           </p>
         </section>
 
-        <section className="rounded-3xl border border-sky-200/80 bg-white/85 p-6 shadow-lg shadow-sky-100 backdrop-blur-sm sm:p-8">
+        <section
+          className={`rounded-3xl border p-6 shadow-lg backdrop-blur-sm sm:p-8 ${
+            isDark
+              ? "border-sky-400/20 bg-slate-900/70 shadow-black/40"
+              : "border-sky-200/80 bg-white/85 shadow-sky-100"
+          }`}
+        >
           <h2 className="text-2xl font-bold tracking-tight">Leaderboard</h2>
-          <p className="mt-1 text-sm text-slate-600">Top 5 members by XP</p>
+          <p className={`mt-1 text-sm ${isDark ? "text-slate-300" : "text-slate-600"}`}>
+            Top 5 members by current XP
+          </p>
 
-          <div className="mt-4 overflow-x-auto rounded-xl border border-slate-200 bg-slate-50">
+          <div
+            className={`mt-4 overflow-x-auto rounded-xl border ${
+              isDark ? "border-slate-700 bg-slate-800/60" : "border-slate-200 bg-slate-50"
+            }`}
+          >
             <table className="min-w-full text-left text-sm">
-              <thead className="bg-slate-100 text-xs uppercase tracking-wide text-slate-600">
+              <thead
+                className={`text-xs uppercase tracking-wide ${
+                  isDark ? "bg-slate-800 text-slate-300" : "bg-slate-100 text-slate-600"
+                }`}
+              >
                 <tr>
                   <th className="px-4 py-3">Rank</th>
                   <th className="px-4 py-3">Member Name</th>
-                  <th className="px-4 py-3">Level</th>
                   <th className="px-4 py-3">Current XP</th>
-                  <th className="px-4 py-3">Lifetime XP</th>
                 </tr>
               </thead>
               <tbody>
-                {topFive.map((member, index) => {
-                  const { level, currentXp } = getMemberProgress(member.xp);
-
-                  return (
-                    <tr key={member.id} className="border-t border-slate-200">
-                      <td className="px-4 py-3 font-semibold text-slate-900">#{index + 1}</td>
-                      <td className="px-4 py-3 font-semibold text-slate-900">{member.name}</td>
-                      <td className="px-4 py-3 text-slate-700">{level}</td>
-                      <td className="px-4 py-3 text-slate-700">
-                        {currentXp} / {XP_PER_LEVEL}
-                      </td>
-                      <td className="px-4 py-3 text-slate-700">{member.xp}</td>
-                    </tr>
-                  );
-                })}
+                {topFive.map((member, index) => (
+                  <tr
+                    key={member.id}
+                    className={`border-t ${isDark ? "border-slate-700" : "border-slate-200"}`}
+                  >
+                    <td className={`px-4 py-3 font-semibold ${isDark ? "text-slate-100" : "text-slate-900"}`}>
+                      #{index + 1}
+                    </td>
+                    <td className={`px-4 py-3 font-semibold ${isDark ? "text-slate-100" : "text-slate-900"}`}>
+                      {member.name}
+                    </td>
+                    <td className={`px-4 py-3 ${isDark ? "text-slate-300" : "text-slate-700"}`}>
+                      {member.currentXp}
+                    </td>
+                  </tr>
+                ))}
               </tbody>
             </table>
           </div>
         </section>
 
-        <section className="rounded-3xl border border-teal-200/80 bg-white/85 p-6 shadow-lg shadow-teal-100 backdrop-blur-sm sm:p-8">
+        <section
+          className={`rounded-3xl border p-6 shadow-lg backdrop-blur-sm sm:p-8 ${
+            isDark
+              ? "border-teal-400/20 bg-slate-900/70 shadow-black/40"
+              : "border-teal-200/80 bg-white/85 shadow-teal-100"
+          }`}
+        >
           <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
             <div>
               <h2 className="text-2xl font-bold tracking-tight">Members</h2>
-              <p className="mt-1 text-sm text-slate-600">
+              <p className={`mt-1 text-sm ${isDark ? "text-slate-300" : "text-slate-600"}`}>
                 Search members and view stats in a table
               </p>
             </div>
@@ -166,38 +254,59 @@ export default function Home() {
                 value={query}
                 onChange={(event) => setQuery(event.target.value)}
                 placeholder="Search by name"
-                className="w-full rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-sm outline-none ring-0 transition focus:border-teal-500"
+                className={`w-full rounded-xl border px-4 py-2.5 text-sm outline-none ring-0 transition focus:border-teal-500 ${
+                  isDark
+                    ? "border-slate-600 bg-slate-800 text-slate-100 placeholder:text-slate-400"
+                    : "border-slate-300 bg-white text-slate-900"
+                }`}
               />
             </label>
           </div>
 
-          <div className="mt-5 overflow-x-auto rounded-xl border border-slate-200 bg-slate-50">
+          <div
+            className={`mt-5 overflow-x-auto rounded-xl border ${
+              isDark ? "border-slate-700 bg-slate-800/60" : "border-slate-200 bg-slate-50"
+            }`}
+          >
             {filteredMembers.length === 0 ? (
-              <p className="rounded-xl border border-dashed border-slate-300 bg-slate-50 p-4 text-sm text-slate-600">
+              <p
+                className={`rounded-xl border border-dashed p-4 text-sm ${
+                  isDark
+                    ? "border-slate-600 bg-slate-800 text-slate-300"
+                    : "border-slate-300 bg-slate-50 text-slate-600"
+                }`}
+              >
                 No members found for this search.
               </p>
             ) : (
               <table className="min-w-full text-left text-sm">
-                <thead className="bg-slate-100 text-xs uppercase tracking-wide text-slate-600">
+                <thead
+                  className={`text-xs uppercase tracking-wide ${
+                    isDark ? "bg-slate-800 text-slate-300" : "bg-slate-100 text-slate-600"
+                  }`}
+                >
                   <tr>
                     <th className="px-4 py-3">Member Name</th>
-                    <th className="px-4 py-3">Level</th>
                     <th className="px-4 py-3">Current XP</th>
                     <th className="px-4 py-3">Lifetime XP</th>
                   </tr>
                 </thead>
                 <tbody>
                   {filteredMembers.map((member) => {
-                    const { level, currentXp } = getMemberProgress(member.xp);
-
                     return (
-                      <tr key={member.id} className="border-t border-slate-200">
-                        <td className="px-4 py-3 font-semibold text-slate-900">{member.name}</td>
-                        <td className="px-4 py-3 text-slate-700">{level}</td>
-                        <td className="px-4 py-3 text-slate-700">
-                          {currentXp} / {XP_PER_LEVEL}
+                      <tr
+                        key={member.id}
+                        className={`border-t ${isDark ? "border-slate-700" : "border-slate-200"}`}
+                      >
+                        <td className={`px-4 py-3 font-semibold ${isDark ? "text-slate-100" : "text-slate-900"}`}>
+                          {member.name}
                         </td>
-                        <td className="px-4 py-3 text-slate-700">{member.xp}</td>
+                        <td className={`px-4 py-3 ${isDark ? "text-slate-300" : "text-slate-700"}`}>
+                          {member.currentXp}
+                        </td>
+                        <td className={`px-4 py-3 ${isDark ? "text-slate-300" : "text-slate-700"}`}>
+                          {member.xp}
+                        </td>
                       </tr>
                     );
                   })}
