@@ -148,7 +148,6 @@ export default function Home() {
 
         <section className="rounded-3xl border border-white/15 bg-slate-950/55 p-6 shadow-lg shadow-black/40 backdrop-blur-md sm:p-8">
           <h2 className="text-2xl font-bold tracking-tight">Leaderboard</h2>
-          <p className="mt-1 text-sm text-slate-300">Top 5 members by current XP</p>
 
           <div
             className="mt-4 overflow-x-auto rounded-xl border border-white/10 bg-black/20"
@@ -187,7 +186,6 @@ export default function Home() {
           <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
             <div>
               <h2 className="text-2xl font-bold tracking-tight">Members</h2>
-              <p className="mt-1 text-sm text-slate-300">Search members and view stats in a table</p>
             </div>
 
             <label className="w-full sm:max-w-xs">
