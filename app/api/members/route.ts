@@ -18,11 +18,11 @@ export async function GET() {
   }
 
   const sql = neon(databaseUrl);
-  const members = await sql<MemberRow[]>`
+  const members = (await sql`
     select id, name, xp
     from members
     order by xp desc, name asc
-  `;
+  `) as MemberRow[];
 
   return NextResponse.json(members);
 }
