@@ -14,11 +14,23 @@ type MemberWithProgress = Member & {
   currentXp: number;
 };
 
+type Progress = {
+  level: number;
+  currentXp: number;
+};
+
 const XP_PER_LEVEL = 64;
 
 function getMemberProgress(lifetimeXp: number) {
   const level = Math.floor(lifetimeXp / XP_PER_LEVEL) + 1;
   const currentXp = lifetimeXp % XP_PER_LEVEL;
+
+  return { level, currentXp };
+}
+
+function getAggregateProgress(totalLifetimeXp: number): Progress {
+  const level = Math.floor(totalLifetimeXp / XP_PER_LEVEL) + 1;
+  const currentXp = totalLifetimeXp % XP_PER_LEVEL;
 
   return { level, currentXp };
 }
@@ -80,6 +92,20 @@ export default function Home() {
     [members],
   );
 
+  const totalLifetimeXp = useMemo(
+    () => members.reduce((sum, member) => sum + member.xp, 0),
+    [members],
+  );
+
+  const { level, currentXp: xpIntoCurrentLevel } = useMemo(
+    () => getAggregateProgress(totalLifetimeXp),
+    [totalLifetimeXp],
+  );
+
+  const progressPercent = members.length
+    ? (xpIntoCurrentLevel / XP_PER_LEVEL) * 100
+    : 0;
+
   const sortedByCurrentXp = useMemo(
     () =>
       [...membersWithProgress].sort(
@@ -89,13 +115,6 @@ export default function Home() {
   );
 
   const topFive = useMemo(() => sortedByCurrentXp.slice(0, 5), [sortedByCurrentXp]);
-
-  const featuredMember = topFive[0];
-  const level = featuredMember?.level ?? 0;
-  const xpIntoCurrentLevel = featuredMember?.currentXp ?? 0;
-  const progressPercent = featuredMember
-    ? (xpIntoCurrentLevel / XP_PER_LEVEL) * 100
-    : 0;
 
   const filteredMembers = useMemo(() => {
     const q = query.trim().toLowerCase();
