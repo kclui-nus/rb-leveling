@@ -108,7 +108,7 @@ export default function Home() {
     [membersWithProgress],
   );
 
-  const topFive = useMemo(() => sortedByCurrentXp.slice(0, 5), [sortedByCurrentXp]);
+  const topThree = useMemo(() => sortedByCurrentXp.slice(0, 3), [sortedByCurrentXp]);
 
   const filteredMembers = useMemo(() => {
     const q = query.trim().toLowerCase();
@@ -125,7 +125,7 @@ export default function Home() {
     setCurrentPage(1);
   }, [query]);
 
-  const membersPerPage = 10;
+  const membersPerPage = 5;
   const totalMemberPages = Math.max(
     1,
     Math.ceil(filteredMembers.length / membersPerPage),
@@ -202,7 +202,7 @@ export default function Home() {
           >
             {isLoading ? (
               <p className="px-4 py-4 text-sm text-slate-300">Loading leaderboard...</p>
-            ) : topFive.length === 0 ? (
+            ) : topThree.length === 0 ? (
               <p className="px-4 py-4 text-sm text-slate-300">No members found in Neon.</p>
             ) : (
               <table className="min-w-full text-left text-sm">
@@ -214,7 +214,7 @@ export default function Home() {
                   </tr>
                 </thead>
                 <tbody>
-                  {topFive.map((member, index) => (
+                  {topThree.map((member, index) => (
                     <tr
                       key={member.id}
                       className="border-t border-white/10"
