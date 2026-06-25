@@ -6,7 +6,7 @@ import Image from "next/image";
 type Member = {
   id: number;
   name: string;
-  xp: number;
+  lifetime_xp: number;
   current_xp: number;
 };
 
@@ -78,7 +78,7 @@ export default function Home() {
   const membersWithProgress = useMemo<MemberWithProgress[]>(
     () =>
       members.map((member) => {
-        const level = Math.floor(member.xp / XP_PER_LEVEL) + 1;
+        const level = Math.floor(member.lifetime_xp / XP_PER_LEVEL) + 1;
 
         return { ...member, level };
       }),
@@ -86,7 +86,7 @@ export default function Home() {
   );
 
   const totalLifetimeXp = useMemo(
-    () => members.reduce((sum, member) => sum + member.xp, 0),
+    () => members.reduce((sum, member) => sum + member.lifetime_xp, 0),
     [members],
   );
 
@@ -102,7 +102,7 @@ export default function Home() {
   const sortedByCurrentXp = useMemo(
     () =>
       [...membersWithProgress].sort(
-        (a, b) => b.current_xp - a.current_xp || b.xp - a.xp,
+        (a, b) => b.current_xp - a.current_xp || b.lifetime_xp - a.lifetime_xp,
       ),
     [membersWithProgress],
   );
@@ -268,7 +268,7 @@ export default function Home() {
                           {member.current_xp}
                         </td>
                         <td className="px-4 py-3 text-slate-200">
-                          {member.xp}
+                          {member.lifetime_xp}
                         </td>
                       </tr>
                     );

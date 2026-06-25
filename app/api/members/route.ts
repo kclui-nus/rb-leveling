@@ -4,7 +4,7 @@ import { NextResponse } from "next/server";
 type MemberRow = {
   id: number;
   name: string;
-  xp: number;
+  lifetime_xp: number;
   current_xp: number;
 };
 
@@ -20,9 +20,9 @@ export async function GET() {
 
   const sql = neon(databaseUrl);
   const members = (await sql`
-    select id, name, xp, coalesce(current_xp, 0) as current_xp
+    select id, name, lifetime_xp, coalesce(current_xp, 0) as current_xp
     from members
-    order by coalesce(current_xp, 0) desc, xp desc, name asc
+    order by coalesce(current_xp, 0) desc, lifetime_xp desc, name asc
   `) as MemberRow[];
 
   return NextResponse.json(members);
