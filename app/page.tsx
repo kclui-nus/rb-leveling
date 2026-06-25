@@ -173,7 +173,7 @@ export default function Home() {
                   {isLoading ? "Loading..." : `Level ${level}`}
                 </h1>
                 <p className="text-sm font-medium text-slate-300 sm:text-base">
-                  {isLoading ? "Fetching Neon data" : `${xpIntoCurrentLevel} / ${XP_PER_LEVEL} XP`}
+                  {isLoading ? "Fetching data" : `${xpIntoCurrentLevel} / ${XP_PER_LEVEL} XP`}
                 </p>
               </div>
             </div>
