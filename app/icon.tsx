@@ -22,13 +22,11 @@ export default function Icon() {
           backgroundColor: "#020617",
           borderRadius: "24%",
           overflow: "hidden",
+          backgroundImage: "url('/card-affinity-logo.jpeg')",
+          backgroundSize: "cover",
+          backgroundPosition: "center",
         }}
       >
-        <img
-          src="/card-affinity-logo.jpeg"
-          alt="Card Affinity logo"
-          style={{ width: "100%", height: "100%", objectFit: "cover" }}
-        />
       </div>
     ),
     size,

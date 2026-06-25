@@ -1,6 +1,7 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import Image from "next/image";
 
 type Member = {
   id: number;
@@ -15,49 +16,6 @@ type MemberWithProgress = Member & {
 
 const XP_PER_LEVEL = 64;
 
-const members: Member[] = [
-  {
-    id: 1,
-    name: "Kai",
-    xp: 198,
-  },
-  {
-    id: 2,
-    name: "Mina",
-    xp: 252,
-  },
-  {
-    id: 3,
-    name: "Jordan",
-    xp: 145,
-  },
-  {
-    id: 4,
-    name: "Riley",
-    xp: 231,
-  },
-  {
-    id: 5,
-    name: "Nora",
-    xp: 119,
-  },
-  {
-    id: 6,
-    name: "Elio",
-    xp: 173,
-  },
-  {
-    id: 7,
-    name: "Sage",
-    xp: 264,
-  },
-  {
-    id: 8,
-    name: "Iris",
-    xp: 96,
-  },
-];
-
 function getMemberProgress(lifetimeXp: number) {
   const level = Math.floor(lifetimeXp / XP_PER_LEVEL) + 1;
   const currentXp = lifetimeXp % XP_PER_LEVEL;
@@ -67,6 +25,50 @@ function getMemberProgress(lifetimeXp: number) {
 
 export default function Home() {
   const [query, setQuery] = useState("");
+  const [members, setMembers] = useState<Member[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    async function loadMembers() {
+      try {
+        setIsLoading(true);
+        setError(null);
+
+        const response = await fetch("/api/members");
+
+        if (!response.ok) {
+          throw new Error(`Failed to load members: ${response.status}`);
+        }
+
+        const data = (await response.json()) as Member[];
+
+        if (!cancelled) {
+          setMembers(data);
+        }
+      } catch (loadError) {
+        if (!cancelled) {
+          setError(
+            loadError instanceof Error
+              ? loadError.message
+              : "Failed to load members",
+          );
+        }
+      } finally {
+        if (!cancelled) {
+          setIsLoading(false);
+        }
+      }
+    }
+
+    void loadMembers();
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   const membersWithProgress = useMemo<MemberWithProgress[]>(
     () =>
@@ -75,7 +77,7 @@ export default function Home() {
 
         return { ...member, level, currentXp };
       }),
-    [],
+    [members],
   );
 
   const sortedByCurrentXp = useMemo(
@@ -89,9 +91,11 @@ export default function Home() {
   const topFive = useMemo(() => sortedByCurrentXp.slice(0, 5), [sortedByCurrentXp]);
 
   const featuredMember = topFive[0];
-  const level = featuredMember.level;
-  const xpIntoCurrentLevel = featuredMember.currentXp;
-  const progressPercent = (xpIntoCurrentLevel / XP_PER_LEVEL) * 100;
+  const level = featuredMember?.level ?? 0;
+  const xpIntoCurrentLevel = featuredMember?.currentXp ?? 0;
+  const progressPercent = featuredMember
+    ? (xpIntoCurrentLevel / XP_PER_LEVEL) * 100
+    : 0;
 
   const filteredMembers = useMemo(() => {
     const q = query.trim().toLowerCase();
@@ -115,10 +119,12 @@ export default function Home() {
         <section className="overflow-hidden rounded-3xl border border-white/15 bg-slate-950/55 p-6 shadow-lg shadow-black/40 backdrop-blur-md sm:p-8">
           <div className="flex items-start gap-4 sm:gap-5">
             <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-2xl border border-amber-500/20 bg-slate-950/90 p-2 shadow-lg shadow-black/40 sm:h-[4.5rem] sm:w-[4.5rem]">
-              <img
+              <Image
                 src="/card-affinity-logo.jpeg"
                 alt="Card Affinity logo"
                 className="h-12 w-12 object-contain sm:h-14 sm:w-14"
+                width={56}
+                height={56}
               />
             </div>
 
@@ -128,10 +134,10 @@ export default function Home() {
               </p>
               <div className="mt-2 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
                 <h1 className="text-4xl font-bold tracking-tight sm:text-5xl">
-                  Level {level}
+                  {isLoading ? "Loading..." : `Level ${level}`}
                 </h1>
                 <p className="text-sm font-medium text-slate-300 sm:text-base">
-                  {xpIntoCurrentLevel} / {XP_PER_LEVEL} XP
+                  {isLoading ? "Fetching Neon data" : `${xpIntoCurrentLevel} / ${XP_PER_LEVEL} XP`}
                 </p>
               </div>
             </div>
@@ -144,6 +150,12 @@ export default function Home() {
             />
           </div>
 
+          {error ? (
+            <p className="mt-4 rounded-xl border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm text-red-200">
+              {error}
+            </p>
+          ) : null}
+
         </section>
 
         <section className="rounded-3xl border border-white/15 bg-slate-950/55 p-6 shadow-lg shadow-black/40 backdrop-blur-md sm:p-8">
@@ -152,33 +164,39 @@ export default function Home() {
           <div
             className="mt-4 overflow-x-auto rounded-xl border border-white/10 bg-black/20"
           >
-            <table className="min-w-full text-left text-sm">
-              <thead className="bg-white/10 text-xs uppercase tracking-wide text-slate-200">
-                <tr>
-                  <th className="px-4 py-3">Rank</th>
-                  <th className="px-4 py-3">Member Name</th>
-                  <th className="px-4 py-3">Current XP</th>
-                </tr>
-              </thead>
-              <tbody>
-                {topFive.map((member, index) => (
-                  <tr
-                    key={member.id}
-                    className="border-t border-white/10"
-                  >
-                    <td className="px-4 py-3 font-semibold text-slate-100">
-                      #{index + 1}
-                    </td>
-                    <td className="px-4 py-3 font-semibold text-slate-100">
-                      {member.name}
-                    </td>
-                    <td className="px-4 py-3 text-slate-200">
-                      {member.currentXp}
-                    </td>
+            {isLoading ? (
+              <p className="px-4 py-4 text-sm text-slate-300">Loading leaderboard...</p>
+            ) : topFive.length === 0 ? (
+              <p className="px-4 py-4 text-sm text-slate-300">No members found in Neon.</p>
+            ) : (
+              <table className="min-w-full text-left text-sm">
+                <thead className="bg-white/10 text-xs uppercase tracking-wide text-slate-200">
+                  <tr>
+                    <th className="px-4 py-3">Rank</th>
+                    <th className="px-4 py-3">Member Name</th>
+                    <th className="px-4 py-3">Current XP</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
+                </thead>
+                <tbody>
+                  {topFive.map((member, index) => (
+                    <tr
+                      key={member.id}
+                      className="border-t border-white/10"
+                    >
+                      <td className="px-4 py-3 font-semibold text-slate-100">
+                        #{index + 1}
+                      </td>
+                      <td className="px-4 py-3 font-semibold text-slate-100">
+                        {member.name}
+                      </td>
+                      <td className="px-4 py-3 text-slate-200">
+                        {member.currentXp}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            )}
           </div>
         </section>
 
@@ -203,7 +221,13 @@ export default function Home() {
           <div
             className="mt-5 overflow-x-auto rounded-xl border border-white/10 bg-black/20"
           >
-            {filteredMembers.length === 0 ? (
+            {isLoading ? (
+              <p
+                className="rounded-xl border border-dashed border-white/15 bg-black/20 p-4 text-sm text-slate-300"
+              >
+                Loading members from Neon...
+              </p>
+            ) : filteredMembers.length === 0 ? (
               <p
                 className="rounded-xl border border-dashed border-white/15 bg-black/20 p-4 text-sm text-slate-300"
               >
