@@ -30,6 +30,7 @@ function getAggregateProgress(totalLifetimeXp: number): Progress {
 
 export default function Home() {
   const [query, setQuery] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
   const [members, setMembers] = useState<Member[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -119,6 +120,29 @@ export default function Home() {
       member.name.toLowerCase().includes(q),
     );
   }, [query, membersWithProgress]);
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [query]);
+
+  const membersPerPage = 10;
+  const totalMemberPages = Math.max(
+    1,
+    Math.ceil(filteredMembers.length / membersPerPage),
+  );
+
+  const paginatedMembers = useMemo(
+    () =>
+      filteredMembers.slice(
+        (currentPage - 1) * membersPerPage,
+        currentPage * membersPerPage,
+      ),
+    [currentPage, filteredMembers],
+  );
+
+  useEffect(() => {
+    setCurrentPage((page) => Math.min(page, totalMemberPages));
+  }, [totalMemberPages]);
 
   return (
     <div className="relative min-h-screen overflow-hidden px-4 py-8 text-slate-100 sm:px-8">
@@ -255,7 +279,7 @@ export default function Home() {
                   </tr>
                 </thead>
                 <tbody>
-                  {filteredMembers.map((member) => {
+                  {paginatedMembers.map((member) => {
                     return (
                       <tr
                         key={member.id}
@@ -277,6 +301,35 @@ export default function Home() {
               </table>
             )}
           </div>
+
+          {filteredMembers.length > 0 ? (
+            <div className="mt-4 flex flex-col gap-3 border-t border-white/10 pt-4 sm:flex-row sm:items-center sm:justify-between">
+              <p className="text-sm text-slate-300">
+                Page {currentPage} of {totalMemberPages}
+              </p>
+
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => setCurrentPage((page) => Math.max(1, page - 1))}
+                  disabled={currentPage === 1}
+                  className="rounded-lg border border-white/15 bg-black/25 px-3 py-2 text-sm text-slate-100 transition disabled:cursor-not-allowed disabled:opacity-40"
+                >
+                  Previous
+                </button>
+                <button
+                  type="button"
+                  onClick={() =>
+                    setCurrentPage((page) => Math.min(totalMemberPages, page + 1))
+                  }
+                  disabled={currentPage === totalMemberPages}
+                  className="rounded-lg border border-white/15 bg-black/25 px-3 py-2 text-sm text-slate-100 transition disabled:cursor-not-allowed disabled:opacity-40"
+                >
+                  Next
+                </button>
+              </div>
+            </div>
+          ) : null}
         </section>
       </main>
     </div>
