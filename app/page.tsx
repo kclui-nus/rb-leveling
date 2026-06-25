@@ -7,11 +7,11 @@ type Member = {
   id: number;
   name: string;
   xp: number;
+  current_xp: number;
 };
 
 type MemberWithProgress = Member & {
   level: number;
-  currentXp: number;
 };
 
 type Progress = {
@@ -20,13 +20,6 @@ type Progress = {
 };
 
 const XP_PER_LEVEL = 64;
-
-function getMemberProgress(lifetimeXp: number) {
-  const level = Math.floor(lifetimeXp / XP_PER_LEVEL) + 1;
-  const currentXp = lifetimeXp % XP_PER_LEVEL;
-
-  return { level, currentXp };
-}
 
 function getAggregateProgress(totalLifetimeXp: number): Progress {
   const level = Math.floor(totalLifetimeXp / XP_PER_LEVEL) + 1;
@@ -85,9 +78,9 @@ export default function Home() {
   const membersWithProgress = useMemo<MemberWithProgress[]>(
     () =>
       members.map((member) => {
-        const { level, currentXp } = getMemberProgress(member.xp);
+        const level = Math.floor(member.xp / XP_PER_LEVEL) + 1;
 
-        return { ...member, level, currentXp };
+        return { ...member, level };
       }),
     [members],
   );
@@ -109,7 +102,7 @@ export default function Home() {
   const sortedByCurrentXp = useMemo(
     () =>
       [...membersWithProgress].sort(
-        (a, b) => b.currentXp - a.currentXp || b.xp - a.xp,
+        (a, b) => b.current_xp - a.current_xp || b.xp - a.xp,
       ),
     [membersWithProgress],
   );
@@ -209,7 +202,7 @@ export default function Home() {
                         {member.name}
                       </td>
                       <td className="px-4 py-3 text-slate-200">
-                        {member.currentXp}
+                        {member.current_xp}
                       </td>
                     </tr>
                   ))}
@@ -272,7 +265,7 @@ export default function Home() {
                           {member.name}
                         </td>
                         <td className="px-4 py-3 text-slate-200">
-                          {member.currentXp}
+                          {member.current_xp}
                         </td>
                         <td className="px-4 py-3 text-slate-200">
                           {member.xp}

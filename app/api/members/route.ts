@@ -5,6 +5,7 @@ type MemberRow = {
   id: number;
   name: string;
   xp: number;
+  current_xp: number;
 };
 
 export async function GET() {
@@ -19,9 +20,9 @@ export async function GET() {
 
   const sql = neon(databaseUrl);
   const members = (await sql`
-    select id, name, xp
+    select id, name, xp, coalesce(current_xp, 0) as current_xp
     from members
-    order by xp desc, name asc
+    order by coalesce(current_xp, 0) desc, xp desc, name asc
   `) as MemberRow[];
 
   return NextResponse.json(members);
